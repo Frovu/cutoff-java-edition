@@ -94,6 +94,12 @@
         200 with json {login: bool, [guest: bool, username: string]}
         404 // ???
 
+## application.properties
+spring.jpa.hibernate.ddl-auto=none
+spring.datasource.url=jdbc:mysql://${MYSQL_HOST:localhost}:3306/db_name
+spring.datasource.username=
+spring.datasource.password=
+spring.datasource.driver-class-name=com.mysql.jdbc.Driver
 
 ## MySQL structure
 

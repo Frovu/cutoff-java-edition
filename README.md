@@ -115,9 +115,9 @@ CREATE TABLE IF NOT EXISTS `instances` (
   `id` CHAR(36) NOT NULL,
   `owner` int NOT NULL,
   `name` varchar(255),
-  `created` DATETIME NOT NULL,
-  `completed` DATETIME NOT NULL,
-  `datetime` DATETIME NOT NULL,
+  `created` DATETIME,
+  `completed` DATETIME,
+  `datetime` DATETIME,
   `swdp` FLOAT,
   `dst` FLOAT,
   `imfBy` FLOAT,
@@ -134,7 +134,7 @@ CREATE TABLE IF NOT EXISTS `instances` (
   `lower` FLOAT,
   `upper` FLOAT,
   `step` FLOAT,
-  `flightTime` FLOAT,
+  `flight_time` FLOAT,
   PRIMARY KEY (`id`)
 ) ENGINE=InnoDB;
 ```

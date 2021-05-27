@@ -1,0 +1,13 @@
+package com.frovy.cutoffjavaedition;
+
+import org.junit.jupiter.api.Test;
+import org.springframework.boot.test.context.SpringBootTest;
+
+@SpringBootTest
+class CutoffJavaEditionApplicationTests {
+
+	@Test
+	void contextLoads() {
+	}
+
+}

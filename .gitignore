@@ -1,6 +1,7 @@
 *.class
 *.jar
 *.log
+*.exe
 application.properties
 .gradle
 build

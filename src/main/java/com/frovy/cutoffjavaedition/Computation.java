@@ -8,7 +8,7 @@ import java.io.IOException;
 import java.util.Date;
 import java.text.SimpleDateFormat;
 
-public class Computation {
+public class Computation extends Thread {
 	private final String baseDir = "cutoff";
 	private final String iniFilename = "CutOff.ini";
 	private final String datFilename = "Cutoff.dat";
@@ -43,7 +43,18 @@ public class Computation {
 			Files.write(Paths.get(baseDir, id, iniFilename), content.getBytes());
 	}
 
-	public void run() {
+	public void run()  {
+		try {
+			File exe = new File(exeFilename);
+			ProcessBuilder builder = new ProcessBuilder().command("wine", exe.getAbsolutePath());
+			builder.directory(new File(baseDir, id));
+			Process exec = builder.start();
+			int exitCode = exec.waitFor();
+			System.out.println(exitCode);
+		} catch (IOException e) {
 
+		} catch (InterruptedException e) {
+
+		}
 	}
 }

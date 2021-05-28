@@ -49,7 +49,8 @@ public class InstanceController {
 			n.setStep(step);
 			n.setFlightTime(new Float(.1));
 			instanceRepository.save(n);
-			Computation Computation = new Computation(n);
+			Computation computation = new Computation(n);
+			computation.start();
 			return Collections.singletonMap("id", n.getId());
 		} catch(java.text.ParseException e) {
 			return Collections.singletonMap("error", "parsing");

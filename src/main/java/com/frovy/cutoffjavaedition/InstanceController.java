@@ -6,11 +6,17 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.HttpStatus;
+import org.springframework.http.ResponseEntity;
+import javax.servlet.http.HttpSession;
 import java.util.Collections;
 import java.util.Map;
 import java.util.Date;
 import java.text.DateFormat;
 import java.text.SimpleDateFormat;
+import java.util.stream.StreamSupport;
+import java.util.stream.Stream;
+
 
 @RestController
 @RequestMapping(path="/instance")
@@ -19,8 +25,19 @@ public class InstanceController {
 	@Autowired
 	private InstanceRepository instanceRepository;
 
+	private HttpStatus authorize(HttpSession session, String id) {
+		if (null==session.getAttribute("login") || true != (boolean)session.getAttribute("login"))
+			return HttpStatus.UNAUTHORIZED;
+		if (instanceRepository.existsById(id))
+			return HttpStatus.NOT_FOUND;
+		Instance target = instanceRepository.findById(id);
+		if (null==session.getAttribute("uid") || (int)session.getAttribute("uid") != target.getOwner())
+			return HttpStatus.FORBIDDEN;
+		return HttpStatus.OK;
+	}
+
 	@PostMapping(path="")
-	public Map<String, String> create(
+	public Map<String, String> create(HttpSession session,
 		@RequestParam String datetime,
 		@RequestParam Float kp,
 		@RequestParam Float alt,
@@ -57,5 +74,16 @@ public class InstanceController {
 		} catch(java.io.IOException e) {
 			return Collections.singletonMap("error", "fileio");
 		}
+	}
+
+	@GetMapping(path="")
+	public ResponseEntity getAll(HttpSession session) {
+		if (null==session.getAttribute("login") || true != (boolean)session.getAttribute("login"))
+			return ResponseEntity.status(HttpStatus.UNAUTHORIZED).body(null);
+		int uid = (int)session.getAttribute("uid");
+		Stream<Instance> list = StreamSupport.stream(instanceRepository.findAll().spliterator(), false).filter(
+			item -> item.getOwner() == uid
+		);
+		return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("instances", list));
 	}
 }

@@ -7,6 +7,8 @@ import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.http.ResponseEntity;
+import org.springframework.http.HttpStatus;
 import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.servlet.http.HttpSession;
@@ -19,7 +21,7 @@ public class UserController {
 	private UserRepository userRepository;
 
 	@PostMapping(path="")
-	public String greeting(HttpSession session, @RequestParam String email, @RequestParam String password) {
+	public String register(HttpSession session, @RequestParam String email, @RequestParam String password) {
 		User n = new User();
 		n.setEmail(email);
 		n.setPassword(password);
@@ -28,13 +30,26 @@ public class UserController {
 		return "Saved";
 	}
 
+	@PostMapping(path="/login")
+	public ResponseEntity login(HttpSession session, @RequestParam String email, @RequestParam String password) {
+		session.setAttribute("username", email);
+		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+	}
+
+	@PostMapping(path="/logout")
+	public ResponseEntity login(HttpSession session) {
+		session.getAttribute("login", false);
+		session.setAttribute("username", null);
+		return "logged out";
+	}
+
 	@GetMapping(path="")
-	public ObjectNode getAllUsers(HttpSession session) {
-		System.out.println(session.getId());
+	public ObjectNode info(HttpSession session) {
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode objectNode = mapper.createObjectNode();
-		objectNode.put("login", false);
-		objectNode.put("username", "something");
+
+		objectNode.put("login", null!=session.getAttribute("login") ? (boolean)session.getAttribute("login") : false);
+		objectNode.put("username", null!=session.getAttribute("username") ? (String)session.getAttribute("username") : "none");
 		return objectNode;
 	}
 }

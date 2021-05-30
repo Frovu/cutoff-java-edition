@@ -13,29 +13,41 @@ import com.fasterxml.jackson.databind.ObjectMapper;
 import com.fasterxml.jackson.databind.node.ObjectNode;
 import javax.servlet.http.HttpSession;
 import java.util.Collections;
+import org.springframework.security.crypto.password.PasswordEncoder;
 
 @RestController
 @RequestMapping(path="/user")
 public class UserController {
 	@Autowired
 	private UserRepository userRepository;
+	@Autowired
+	private PasswordEncoder passwordEncoder;
 
 	@PostMapping(path="")
-	public String register(HttpSession session, @RequestParam String email, @RequestParam String password) {
+	public ResponseEntity register(HttpSession session, @RequestParam String email, @RequestParam String password) {
+		if (userRepository.existsByEmail(email))
+			return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
 		User n = new User();
 		n.setEmail(email);
-		n.setPassword(password);
+		n.setPassword(passwordEncoder.encode(password));
+		session.setAttribute("login", true);
+		session.setAttribute("uid", n.getId());
+		session.setAttribute("username", email);
 		userRepository.save(n);
-		System.out.println(session.getId());
-		return "Saved";
+		return ResponseEntity.status(HttpStatus.CREATED).body(null);
 	}
 
 	@PostMapping(path="/login")
 	public ResponseEntity login(HttpSession session, @RequestParam String email, @RequestParam String password) {
+		User target = userRepository.findOneByEmail(email);
+		if (null == target)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		if (!passwordEncoder.matches(password, target.getPassword()))
+			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 		session.setAttribute("login", true);
-		session.setAttribute("uid", 2);
-		session.setAttribute("username", email);
-		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
+		session.setAttribute("uid", target.getId());
+		session.setAttribute("username", target.getEmail());
+		return ResponseEntity.status(HttpStatus.OK).body(null);
 	}
 
 	@PostMapping(path="/logout")

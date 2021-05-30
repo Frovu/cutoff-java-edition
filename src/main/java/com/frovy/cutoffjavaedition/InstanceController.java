@@ -6,6 +6,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.bind.annotation.PathVariable;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import javax.servlet.http.HttpSession;
@@ -16,6 +17,8 @@ import java.text.DateFormat;
 import java.text.SimpleDateFormat;
 import java.util.stream.StreamSupport;
 import java.util.stream.Stream;
+import com.fasterxml.jackson.databind.ObjectMapper;
+import com.fasterxml.jackson.databind.node.ObjectNode;
 
 
 @RestController
@@ -47,8 +50,10 @@ public class InstanceController {
 		@RequestParam Float upper,
 		@RequestParam Float step) {
 		try {
+			if (null==session.getAttribute("login") || true != (boolean)session.getAttribute("login"))
+				return Collections.singletonMap("error", "unauthorized");
 			Instance n = new Instance();
-			n.setOwner(1);
+			n.setOwner((int)session.getAttribute("uid"));
 			n.setName("New Instance");
 			n.setCreated(new java.sql.Timestamp(System.currentTimeMillis()));
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
@@ -66,7 +71,7 @@ public class InstanceController {
 			n.setStep(step);
 			n.setFlightTime(new Float(.1));
 			instanceRepository.save(n);
-			Computation computation = new Computation(n);
+			Computation computation = new Computation(n, instanceRepository);
 			computation.start();
 			return Collections.singletonMap("id", n.getId());
 		} catch(java.text.ParseException e) {
@@ -85,5 +90,20 @@ public class InstanceController {
 			item -> item.getOwner() == uid
 		);
 		return ResponseEntity.status(HttpStatus.OK).body(Collections.singletonMap("instances", list));
+	}
+
+	@GetMapping(path="{id}")
+	public ResponseEntity fetch(HttpSession session, @PathVariable String id) {
+		HttpStatus auth = authorize(session, id);
+		if (auth != HttpStatus.OK)
+			return ResponseEntity.status(auth).body(null);
+		Instance target = instanceRepository.findById(id).orElse(null);
+		if (null == target.getCompleted())
+			return ResponseEntity.status(auth).body(Collections.singletonMap("status", "processing"));
+		ObjectMapper mapper = new ObjectMapper();
+		ObjectNode objectNode = mapper.createObjectNode();
+		objectNode.put("status", "complted");
+		objectNode.put("data", Computation.fetchResults(target));
+		return ResponseEntity.status(HttpStatus.OK).body(objectNode);
 	}
 }

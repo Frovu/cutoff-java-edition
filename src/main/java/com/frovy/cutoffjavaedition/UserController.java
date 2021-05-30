@@ -33,7 +33,7 @@ public class UserController {
 	@PostMapping(path="/login")
 	public ResponseEntity login(HttpSession session, @RequestParam String email, @RequestParam String password) {
 		session.setAttribute("login", true);
-		session.setAttribute("uid", 1);
+		session.setAttribute("uid", 2);
 		session.setAttribute("username", email);
 		return ResponseEntity.status(HttpStatus.BAD_REQUEST).body(null);
 	}

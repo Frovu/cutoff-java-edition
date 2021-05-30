@@ -4,8 +4,8 @@ import org.springframework.data.repository.CrudRepository;
 
 import com.frovy.cutoffjavaedition.Instance;
 
-public interface InstanceRepository extends CrudRepository<Instance, Integer> {
-	Iterable<Instance> findAll();
-	boolean existsById(String id);
-	Instance findById(String id);
+public interface InstanceRepository extends CrudRepository<Instance, String> {
+	// Iterable<Instance> findAll();
+	// boolean existsById(String id);
+	// Instance findById(String id);
 }

@@ -28,9 +28,9 @@ public class InstanceController {
 	private HttpStatus authorize(HttpSession session, String id) {
 		if (null==session.getAttribute("login") || true != (boolean)session.getAttribute("login"))
 			return HttpStatus.UNAUTHORIZED;
-		if (instanceRepository.existsById(id))
-			return HttpStatus.NOT_FOUND;
-		Instance target = instanceRepository.findById(id);
+		Instance target = instanceRepository.findById(id).orElse(null);
+	if (null == target)
+		return HttpStatus.NOT_FOUND;
 		if (null==session.getAttribute("uid") || (int)session.getAttribute("uid") != target.getOwner())
 			return HttpStatus.FORBIDDEN;
 		return HttpStatus.OK;

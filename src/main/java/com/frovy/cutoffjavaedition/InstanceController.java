@@ -3,7 +3,7 @@ package com.frovy.cutoffjavaedition;
 import org.springframework.beans.factory.annotation.Autowired;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PostMapping;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -25,6 +25,17 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 @RequestMapping(path="/instance")
 public class InstanceController {
 
+	static class InstanceData {
+		public String datetime;
+		public Float kp;
+		public Float alt;
+		public Float lat;
+		public Float lon;
+		public Float lower;
+		public Float upper;
+		public Float step;
+	}
+
 	@Autowired
 	private InstanceRepository instanceRepository;
 
@@ -40,15 +51,7 @@ public class InstanceController {
 	}
 
 	@PostMapping(path="")
-	public Map<String, String> create(HttpSession session,
-		@RequestParam String datetime,
-		@RequestParam Float kp,
-		@RequestParam Float alt,
-		@RequestParam Float lat,
-		@RequestParam Float lon,
-		@RequestParam Float lower,
-		@RequestParam Float upper,
-		@RequestParam Float step) {
+	public Map<String, String> create(HttpSession session, @RequestBody InstanceData req) {
 		try {
 			if (null==session.getAttribute("login") || true != (boolean)session.getAttribute("login"))
 				return Collections.singletonMap("error", "unauthorized");
@@ -57,18 +60,18 @@ public class InstanceController {
 			n.setName("New Instance");
 			n.setCreated(new java.sql.Timestamp(System.currentTimeMillis()));
 			DateFormat df = new SimpleDateFormat("yyyy-MM-dd'T'hh:mm:ss");
-			Date date = (Date) df.parse(datetime);
+			Date date = (Date) df.parse(req.datetime);
 			n.setDatetime(new java.sql.Timestamp(date.getTime()));
 			n.setModel("00");
-			n.setKp(kp);
-			n.setAlt(alt);
-			n.setLat(lat);
-			n.setLon(lon);
+			n.setKp(req.kp);
+			n.setAlt(req.alt);
+			n.setLat(req.lat);
+			n.setLon(req.lon);
 			n.setVertical(new Float(.0));
 			n.setAzimutal(new Float(.0));
-			n.setLower(lower);
-			n.setUpper(upper);
-			n.setStep(step);
+			n.setLower(req.lower);
+			n.setUpper(req.upper);
+			n.setStep(req.step);
 			n.setFlightTime(new Float(.1));
 			instanceRepository.save(n);
 			Computation computation = new Computation(n, instanceRepository);

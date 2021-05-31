@@ -5,7 +5,7 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.ResponseBody;
-import org.springframework.web.bind.annotation.RequestParam;
+import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RestController;
 import org.springframework.http.ResponseEntity;
 import org.springframework.http.HttpStatus;
@@ -15,34 +15,39 @@ import javax.servlet.http.HttpSession;
 import java.util.Collections;
 import org.springframework.security.crypto.password.PasswordEncoder;
 
+
 @RestController
 @RequestMapping(path="/user")
 public class UserController {
+	static class UserData {
+		public String email;
+		public String password;
+	}
 	@Autowired
 	private UserRepository userRepository;
 	@Autowired
 	private PasswordEncoder passwordEncoder;
 
 	@PostMapping(path="")
-	public ResponseEntity register(HttpSession session, @RequestParam String email, @RequestParam String password) {
-		if (userRepository.existsByEmail(email))
+	public ResponseEntity register(HttpSession session, @RequestBody UserData req) {
+		if (userRepository.existsByEmail(req.email))
 			return ResponseEntity.status(HttpStatus.CONFLICT).body(null);
 		User n = new User();
-		n.setEmail(email);
-		n.setPassword(passwordEncoder.encode(password));
+		n.setEmail(req.email);
+		n.setPassword(passwordEncoder.encode(req.password));
 		session.setAttribute("login", true);
 		session.setAttribute("uid", n.getId());
-		session.setAttribute("username", email);
+		session.setAttribute("username", req.email);
 		userRepository.save(n);
 		return ResponseEntity.status(HttpStatus.CREATED).body(null);
 	}
 
 	@PostMapping(path="/login")
-	public ResponseEntity login(HttpSession session, @RequestParam String email, @RequestParam String password) {
-		User target = userRepository.findOneByEmail(email);
+	public ResponseEntity login(HttpSession session, @RequestBody UserData req) {
+		User target = userRepository.findOneByEmail(req.email);
 		if (null == target)
 			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
-		if (!passwordEncoder.matches(password, target.getPassword()))
+		if (!passwordEncoder.matches(req.password, target.getPassword()))
 			return ResponseEntity.status(HttpStatus.FORBIDDEN).body(null);
 		session.setAttribute("login", true);
 		session.setAttribute("uid", target.getId());

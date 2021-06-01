@@ -103,4 +103,16 @@ public class InstanceController {
 		objectNode.set("settings", mapper.valueToTree(target));
 		return ResponseEntity.status(HttpStatus.OK).body(objectNode);
 	}
+
+	@PostMapping(path="{id}/kill")
+	public ResponseEntity kill(HttpSession session, @PathVariable String id) {
+		HttpStatus auth = authorize(session, id);
+		if (auth != HttpStatus.OK)
+			return ResponseEntity.status(auth).body(null);
+		Instance target = instanceRepository.findById(id).orElse(null);
+		if (null == target)
+			return ResponseEntity.status(HttpStatus.NOT_FOUND).body(null);
+		instanceRepository.deleteById(target.getId());
+		return ResponseEntity.status(HttpStatus.OK).body(null);
+	}
 }

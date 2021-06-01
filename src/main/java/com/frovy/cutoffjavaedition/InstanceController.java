@@ -23,7 +23,7 @@ import com.fasterxml.jackson.databind.node.ObjectNode;
 public class InstanceController {
 
 	static class InstanceData {
-		public String datetime;
+		public long datetime;
 		public Float kp;
 		public Float alt;
 		public Float lat;
@@ -72,8 +72,6 @@ public class InstanceController {
 			Computation computation = new Computation(n, instanceRepository);
 			computation.start();
 			return Collections.singletonMap("id", n.getId());
-		} catch(java.text.ParseException e) {
-			return Collections.singletonMap("error", "parsing");
 		} catch(java.io.IOException e) {
 			return Collections.singletonMap("error", "fileio");
 		}
@@ -100,8 +98,9 @@ public class InstanceController {
 			return ResponseEntity.status(auth).body(Collections.singletonMap("status", "processing"));
 		ObjectMapper mapper = new ObjectMapper();
 		ObjectNode objectNode = mapper.createObjectNode();
-		objectNode.put("status", "complted");
+		objectNode.put("status", "completed");
 		objectNode.put("data", Computation.fetchResults(target));
+		objectNode.set("settings", mapper.valueToTree(target));
 		return ResponseEntity.status(HttpStatus.OK).body(objectNode);
 	}
 }

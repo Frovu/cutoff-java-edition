@@ -31,6 +31,7 @@ public class InstanceController {
 		public Float lower;
 		public Float upper;
 		public Float step;
+		public Float flightTime;
 	}
 
 	@Autowired
@@ -67,7 +68,7 @@ public class InstanceController {
 			n.setLower(req.lower);
 			n.setUpper(req.upper);
 			n.setStep(req.step);
-			n.setFlightTime(new Float(.1));
+			n.setFlightTime(req.flightTime);
 			instanceRepository.save(n);
 			Computation computation = new Computation(n, instanceRepository);
 			computation.start();
